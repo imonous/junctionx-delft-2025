@@ -20,22 +20,44 @@ function App() {
   const [callDeclined, setCallDeclined] = useState(false)
   const [isConnecting, setIsConnecting] = useState(false)
   const [declinedSliding, setDeclinedSliding] = useState(false)
+  const [ringtoneInterval, setRingtoneInterval] = useState(null)
 
   // Simulate agent calling the driver after 3 seconds
   useEffect(() => {
+    console.log('Setting up 3-second timer for agent calling...')
     const timer = setTimeout(() => {
+      console.log('3 seconds elapsed, starting agent call...')
       setAgentCalling(true)
+      startIPhoneRingtone()
     }, 3000)
 
     return () => clearTimeout(timer)
   }, [])
 
+  // Clean up ringtone when component unmounts or call ends
+  useEffect(() => {
+    return () => {
+      if (ringtoneInterval) {
+        clearInterval(ringtoneInterval)
+      }
+    }
+  }, [ringtoneInterval])
+
   async function handleAcceptCall() {
+    // Stop iPhone ringtone
+    stopIPhoneRingtone()
+    
+    // Play phone pickup sound
+    playPhonePickupSound()
+    
     setAgentCalling(false)
     setIsConnecting(true)
     
     // Show connecting state for 400ms
     setTimeout(async () => {
+      // Play connection sound
+      playConnectionSound()
+      
       setIsConnecting(false)
       setIsInCall(true)
       // Keep Uber screen visible but dimmed
@@ -52,7 +74,228 @@ function App() {
     }, 400)
   }
 
+  function playPhonePickupSound() {
+    // Create realistic phone pickup sound with multiple tones
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)()
+    
+    // Create a more complex pickup sound with two oscillators
+    const oscillator1 = audioContext.createOscillator()
+    const oscillator2 = audioContext.createOscillator()
+    const gainNode = audioContext.createGain()
+    const filter = audioContext.createBiquadFilter()
+    
+    // Connect the audio graph
+    oscillator1.connect(filter)
+    oscillator2.connect(filter)
+    filter.connect(gainNode)
+    gainNode.connect(audioContext.destination)
+    
+    // Set up filter for more realistic phone sound
+    filter.type = 'lowpass'
+    filter.frequency.setValueAtTime(2000, audioContext.currentTime)
+    
+    // First tone: lower frequency click
+    oscillator1.type = 'sine'
+    oscillator1.frequency.setValueAtTime(400, audioContext.currentTime)
+    oscillator1.frequency.exponentialRampToValueAtTime(600, audioContext.currentTime + 0.05)
+    
+    // Second tone: higher frequency beep
+    oscillator2.type = 'sine'
+    oscillator2.frequency.setValueAtTime(800, audioContext.currentTime)
+    oscillator2.frequency.exponentialRampToValueAtTime(1000, audioContext.currentTime + 0.08)
+    
+    // Envelope for natural sound
+    gainNode.gain.setValueAtTime(0, audioContext.currentTime)
+    gainNode.gain.linearRampToValueAtTime(0.4, audioContext.currentTime + 0.02)
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.12)
+    
+    oscillator1.start(audioContext.currentTime)
+    oscillator1.stop(audioContext.currentTime + 0.12)
+    oscillator2.start(audioContext.currentTime)
+    oscillator2.stop(audioContext.currentTime + 0.12)
+  }
+
+  function playConnectionSound() {
+    // Create pleasant connection confirmation sound
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)()
+    
+    // Create a harmonious chord for connection success
+    const oscillator1 = audioContext.createOscillator()
+    const oscillator2 = audioContext.createOscillator()
+    const oscillator3 = audioContext.createOscillator()
+    const gainNode = audioContext.createGain()
+    const filter = audioContext.createBiquadFilter()
+    
+    // Connect the audio graph
+    oscillator1.connect(filter)
+    oscillator2.connect(filter)
+    oscillator3.connect(filter)
+    filter.connect(gainNode)
+    gainNode.connect(audioContext.destination)
+    
+    // Set up filter for warm, pleasant sound
+    filter.type = 'lowpass'
+    filter.frequency.setValueAtTime(3000, audioContext.currentTime)
+    filter.Q.setValueAtTime(1, audioContext.currentTime)
+    
+    // Create a pleasant major chord (C-E-G)
+    oscillator1.type = 'sine'
+    oscillator1.frequency.setValueAtTime(523.25, audioContext.currentTime) // C5
+    
+    oscillator2.type = 'sine'
+    oscillator2.frequency.setValueAtTime(659.25, audioContext.currentTime) // E5
+    
+    oscillator3.type = 'sine'
+    oscillator3.frequency.setValueAtTime(783.99, audioContext.currentTime) // G5
+    
+    // Gentle envelope for pleasant fade-in and fade-out
+    gainNode.gain.setValueAtTime(0, audioContext.currentTime)
+    gainNode.gain.linearRampToValueAtTime(0.15, audioContext.currentTime + 0.1)
+    gainNode.gain.linearRampToValueAtTime(0.1, audioContext.currentTime + 0.3)
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.6)
+    
+    oscillator1.start(audioContext.currentTime)
+    oscillator1.stop(audioContext.currentTime + 0.6)
+    oscillator2.start(audioContext.currentTime)
+    oscillator2.stop(audioContext.currentTime + 0.6)
+    oscillator3.start(audioContext.currentTime)
+    oscillator3.stop(audioContext.currentTime + 0.6)
+  }
+
+  function playDeclineSound() {
+    // Create a gentle decline sound (lower pitch, descending tone)
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)()
+    
+    const oscillator1 = audioContext.createOscillator()
+    const oscillator2 = audioContext.createOscillator()
+    const gainNode = audioContext.createGain()
+    const filter = audioContext.createBiquadFilter()
+    
+    // Connect the audio graph
+    oscillator1.connect(filter)
+    oscillator2.connect(filter)
+    filter.connect(gainNode)
+    gainNode.connect(audioContext.destination)
+    
+    // Set up filter for softer decline sound
+    filter.type = 'lowpass'
+    filter.frequency.setValueAtTime(1500, audioContext.currentTime)
+    
+    // Create a descending tone pattern (like a gentle "no")
+    oscillator1.type = 'sine'
+    oscillator1.frequency.setValueAtTime(400, audioContext.currentTime)
+    oscillator1.frequency.exponentialRampToValueAtTime(300, audioContext.currentTime + 0.15)
+    
+    oscillator2.type = 'sine'
+    oscillator2.frequency.setValueAtTime(600, audioContext.currentTime)
+    oscillator2.frequency.exponentialRampToValueAtTime(450, audioContext.currentTime + 0.15)
+    
+    // Gentle envelope for soft decline sound
+    gainNode.gain.setValueAtTime(0, audioContext.currentTime)
+    gainNode.gain.linearRampToValueAtTime(0.2, audioContext.currentTime + 0.05)
+    gainNode.gain.linearRampToValueAtTime(0.1, audioContext.currentTime + 0.1)
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2)
+    
+    oscillator1.start(audioContext.currentTime)
+    oscillator1.stop(audioContext.currentTime + 0.2)
+    oscillator2.start(audioContext.currentTime)
+    oscillator2.stop(audioContext.currentTime + 0.2)
+  }
+
+  function startIPhoneRingtone() {
+    console.log('Starting iPhone ringtone...')
+    
+    // Create iPhone-style ringtone (classic "Opening" ringtone)
+    const playRing = () => {
+      try {
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)()
+        
+        // Resume audio context if it's suspended (required for autoplay policy)
+        if (audioContext.state === 'suspended') {
+          audioContext.resume().then(() => {
+            console.log('Audio context resumed')
+            createRingSound(audioContext)
+          }).catch(error => {
+            console.error('Failed to resume audio context:', error)
+          })
+        } else {
+          createRingSound(audioContext)
+        }
+      } catch (error) {
+        console.error('Error creating audio context:', error)
+      }
+    }
+    
+    const createRingSound = (audioContext) => {
+      try {
+        const oscillator1 = audioContext.createOscillator()
+        const oscillator2 = audioContext.createOscillator()
+        const gainNode = audioContext.createGain()
+        const filter = audioContext.createBiquadFilter()
+        
+        // Connect the audio graph
+        oscillator1.connect(filter)
+        oscillator2.connect(filter)
+        filter.connect(gainNode)
+        gainNode.connect(audioContext.destination)
+        
+        // Set up filter for iPhone-like sound
+        filter.type = 'lowpass'
+        filter.frequency.setValueAtTime(2500, audioContext.currentTime)
+        filter.Q.setValueAtTime(1, audioContext.currentTime)
+        
+        // iPhone "Opening" ringtone frequencies (A4 and C5)
+        oscillator1.type = 'sine'
+        oscillator1.frequency.setValueAtTime(440, audioContext.currentTime) // A4
+        
+        oscillator2.type = 'sine'
+        oscillator2.frequency.setValueAtTime(523.25, audioContext.currentTime) // C5
+        
+        // iPhone ringtone envelope (quick attack, short sustain, quick decay)
+        gainNode.gain.setValueAtTime(0, audioContext.currentTime)
+        gainNode.gain.linearRampToValueAtTime(0.4, audioContext.currentTime + 0.05)
+        gainNode.gain.linearRampToValueAtTime(0.3, audioContext.currentTime + 0.15)
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5)
+        
+        oscillator1.start(audioContext.currentTime)
+        oscillator1.stop(audioContext.currentTime + 0.5)
+        oscillator2.start(audioContext.currentTime)
+        oscillator2.stop(audioContext.currentTime + 0.5)
+        
+        console.log('Ring played successfully')
+      } catch (error) {
+        console.error('Error creating ring sound:', error)
+      }
+    }
+    
+    // Play ring immediately
+    playRing()
+    
+    // Set up interval to repeat ringtone every 2.5 seconds (iPhone timing)
+    const interval = setInterval(playRing, 2500)
+    setRingtoneInterval(interval)
+    console.log('Ringtone interval set:', interval)
+  }
+
+  function stopIPhoneRingtone() {
+    console.log('Stopping iPhone ringtone...')
+    if (ringtoneInterval) {
+      console.log('Clearing ringtone interval:', ringtoneInterval)
+      clearInterval(ringtoneInterval)
+      setRingtoneInterval(null)
+      console.log('Ringtone stopped successfully')
+    } else {
+      console.log('No ringtone interval to clear')
+    }
+  }
+
   function handleDeclineCall() {
+    // Stop iPhone ringtone
+    stopIPhoneRingtone()
+    
+    // Play decline sound
+    playDeclineSound()
+    
     setAgentCalling(false)
     setCallDeclined(true)
     // Show declined message for 2 seconds, then slide down
@@ -99,6 +342,7 @@ function App() {
     return isInCall ? 'In Call' : 'Tap to start'
   }
 
+
   return (
     <div className="app">
       {/* Uber Driver Screen */}
@@ -137,15 +381,29 @@ function App() {
           </div>
         </div>
 
-        <div className="map-container">
-          <div className="map-placeholder">
-            <div className="map-content">
-              <div className="route-line"></div>
-              <div className="current-location">📍</div>
-              <div className="destination-marker">🏁</div>
-            </div>
-          </div>
-        </div>
+                <div className="map-container">
+                  <div className="map-placeholder">
+                    <div className="map-content">
+                      <div className="map-background">
+                        <div className="map-streets">
+                          {/* Random Roads */}
+                          <div className="road horizontal road-1"></div>
+                          <div className="road horizontal road-2"></div>
+                          <div className="road horizontal road-3"></div>
+                          <div className="road vertical road-4"></div>
+                          <div className="road vertical road-5"></div>
+                          <div className="road vertical road-6"></div>
+                        </div>
+                        <div className="map-labels">
+                          <div className="street-label vertical">Broadway</div>
+                        </div>
+                      </div>
+                      <div className="route-line"></div>
+                      <div className="current-location">📍</div>
+                      <div className="destination-marker">🏁</div>
+                    </div>
+                  </div>
+                </div>
 
         <div className="uber-controls">
           <button className="uber-button">Navigate</button>

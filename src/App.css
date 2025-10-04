@@ -125,15 +125,16 @@
 
 .map-container {
   height: 300px;
-  background: #f5f5f5;
+  background: #1a1a1a;
   position: relative;
   overflow: hidden;
+  border-radius: 12px;
 }
 
 .map-placeholder {
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+  background: #1a1a1a;
   position: relative;
 }
 
@@ -143,15 +144,170 @@
   height: 100%;
 }
 
+.map-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #dedede;
+}
+
+.map-streets {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.street {
+  position: absolute;
+  background: #333333;
+}
+
+.street.horizontal {
+  width: 100%;
+  height: 2px;
+}
+
+.street.vertical {
+  height: 100%;
+  width: 2px;
+}
+
+/* Main Vertical Street - Prominent */
+.main-vertical {
+  background: #555555;
+  box-shadow: 0 0 4px rgba(255, 255, 255, 0.2);
+  width: 4px;
+  z-index: 2;
+}
+
+/* Side Streets - Thinner */
+.side-street {
+  background: #2a2a2a;
+  opacity: 0.7;
+}
+
+.side-street.horizontal {
+  height: 1px;
+}
+
+.side-street.vertical {
+  width: 1px;
+}
+
+/* Highway - Thickest with different color */
+.highway {
+  position: absolute;
+  background: #555555;
+  border: 1px solid #666666;
+}
+
+.highway.horizontal {
+  width: 100%;
+  height: 5px;
+}
+
+.highway.vertical {
+  height: 100%;
+  width: 5px;
+}
+
+/* Curved Roads */
+.curved-road {
+  position: absolute;
+  background: #333333;
+  border-radius: 50%;
+  opacity: 0.8;
+}
+
+/* Intersections */
+.intersection {
+  position: absolute;
+  background: #666666;
+  border-radius: 50%;
+  box-shadow: 0 0 4px rgba(255, 255, 255, 0.2);
+}
+
+/* One Vertical Street - Center */
+.street-1 { left: 50%; }
+
+/* Random Roads */
+.road {
+  position: absolute;
+  background: #999999;
+  opacity: 0.6;
+}
+
+.road.horizontal {
+  width: 100%;
+  height: 2px;
+}
+
+.road.vertical {
+  height: 100%;
+  width: 2px;
+}
+
+/* Road Positions */
+.road-1 { top: 20%; }
+.road-2 { top: 60%; }
+.road-3 { top: 80%; }
+.road-4 { left: 20%; }
+.road-5 { left: 70%; }
+.road-6 { left: 90%; }
+
+.map-labels {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.street-label {
+  position: absolute;
+  color: #666666;
+  font-size: 0.7rem;
+  font-weight: 500;
+  background: rgba(26, 26, 26, 0.8);
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+
+/* Horizontal Street Labels */
+.street-label.horizontal:nth-child(1) { top: 28%; left: 10%; }
+.street-label.horizontal:nth-child(2) { top: 48%; left: 60%; }
+.street-label.horizontal:nth-child(3) { top: 68%; left: 20%; }
+
+/* Horizontal Street Label - Broadway */
+.street-label.vertical {
+  top: 40%;
+  left: 60%;
+  transform: translate(-50%, -50%);
+  white-space: nowrap;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #ffffff;
+  background: rgba(0, 0, 0, 0.8);
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
 .route-line {
   position: absolute;
   top: 50%;
   left: 20%;
-  right: 20%;
+  right: 10%;
   height: 4px;
-  background: #2196f3;
+  background: #007bff;
   border-radius: 2px;
   transform: translateY(-50%);
+  z-index: 2;
 }
 
 .current-location {
@@ -160,14 +316,16 @@
   left: 20%;
   transform: translate(-50%, -50%);
   font-size: 1.5rem;
+  z-index: 3;
 }
 
 .destination-marker {
   position: absolute;
   top: 50%;
-  right: 20%;
+  right: 10%;
   transform: translate(50%, -50%);
   font-size: 1.5rem;
+  z-index: 3;
 }
 
 .uber-controls {
