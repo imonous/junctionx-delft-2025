@@ -1,11 +1,37 @@
 import { useState } from 'react'
+import { RealtimeAgent, RealtimeSession } from '@openai/agents/realtime';
 import './App.css'
+
+const agent = new RealtimeAgent({
+  name: 'Assistant',
+  instructions: 'You are a helpful assistant.',
+});
+
+const session = new RealtimeSession(agent, {
+  model: 'gpt-realtime',
+});
 
 function App() {
   const [isInCall, setIsInCall] = useState(false)
 
-  const handleToggle = () => {
-    setIsInCall(!isInCall)
+  async function handleToggle() {
+    if (isInCall) {
+      setIsInCall(false)
+      await session.close();
+      console.log('You are disconnected!');
+      return
+    }
+
+    setIsInCall(true)
+
+    try {
+      await session.connect({
+        apiKey: 'ek_',
+      });
+      console.log('You are connected!');
+    } catch (e) {
+      console.error(e);
+    }
   }
 
   const getButtonText = () => {
