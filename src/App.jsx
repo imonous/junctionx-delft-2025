@@ -3,15 +3,54 @@ import { RealtimeAgent, RealtimeSession } from '@openai/agents/realtime';
 import { Phone, PhoneCall } from 'lucide-react';
 import { X } from 'lucide-react';
 import './App.css'
+import dedent from 'dedent';
 
 const agent = new RealtimeAgent({
-  name: 'Assistant',
-  instructions: 'You are a helpful assistant.',
+  name: 'Ubi',
+  voice: 'marin',
+  instructions: dedent(`
+    You are Ubi, the Uber Driver Assistant. 
+
+    
+    Keep an upbeat and friendly tone. Don't be too formal, you are friends with the driver.
+    
+    The driver's name is Jack. He's been driving for a while now and is likely tired. Ask him how he is feeling. If he is not great, offer him to take a break.
+  `),
 });
 
 const session = new RealtimeSession(agent, {
   model: 'gpt-realtime',
+  voice: 'marin',
 });
+
+// IMPORTANT: THIS IS FOR LOCAL DEVELOPMENT ONLY!
+const openAiApiKey = import.meta.env.VITE_OPENAI_API_KEY;
+
+async function getEphemeralKey() {
+
+  const response = await fetch('https://api.openai.com/v1/realtime/client_secrets', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${openAiApiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      session: {
+        type: 'realtime',
+        model: 'gpt-realtime'
+      }
+    })
+  });
+
+  if (!response.ok) {
+    throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+  }
+
+  const data = await response.json();
+  return data.value;
+}
+
+
 
 function App() {
   const [isInCall, setIsInCall] = useState(false)
@@ -52,26 +91,22 @@ function App() {
     
     setAgentCalling(false)
     setIsConnecting(true)
-    
-    // Show connecting state for 400ms
-    setTimeout(async () => {
-      // Play connection sound
-      playConnectionSound()
+
+    try {
+      await session.connect({
+        apiKey: await getEphemeralKey(),
+      });
+      session.sendMessage('Ask Jack how he is feeling. Just a quick "how are you"');
+    } catch (e) {
+      console.error(e);
+    }
+
+    playConnectionSound()
       
-      setIsConnecting(false)
-      setIsInCall(true)
-      // Keep Uber screen visible but dimmed
-      setShowUberScreen(true)
-      
-      try {
-        await session.connect({
-          apiKey: 'ek_',
-        });
-        console.log('You are connected!');
-      } catch (e) {
-        console.error(e);
-      }
-    }, 400)
+    setIsConnecting(false)
+    setIsInCall(true)
+    // Keep Uber screen visible but dimmed
+    setShowUberScreen(true)
   }
 
   function playPhonePickupSound() {
@@ -313,24 +348,14 @@ function App() {
     if (isInCall) {
       setIsInCall(false)
       setShowUberScreen(true)
-      await session.close();
+      session.close();
       console.log('You are disconnected!');
       return
     }
 
-    setIsInCall(true)
-    // Keep Uber screen visible but dimmed
-    setShowUberScreen(true)
-
-    try {
-      await session.connect({
-        apiKey: 'ek_',
-      });
-      console.log('You are connected!');
-    } catch (e) {
-      console.error(e);
-    }
+    throw new Error("This ain't supposed to happen...")
   }
+
 
   const getButtonText = () => {
     return isInCall ? 'End Call' : 'Start Call'
