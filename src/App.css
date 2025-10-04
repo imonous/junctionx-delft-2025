@@ -8,11 +8,397 @@
 .app {
   min-height: 100vh;
   background: #000000;
+  position: relative;
+  font-family: 'UberMove', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  overflow: hidden;
+}
+
+/* Uber Driver Screen */
+.uber-screen {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  background: #ffffff;
+  transition: opacity 0.5s ease, transform 0.5s ease;
+  z-index: 1;
+}
+
+.uber-screen.visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.uber-screen.faded {
+  opacity: 0.3;
+  transform: scale(0.95);
+}
+
+.uber-header {
+  background: #000000;
+  color: #ffffff;
+  padding: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.driver-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.driver-avatar {
+  font-size: 2rem;
+}
+
+.driver-details h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.driver-details p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #cccccc;
+}
+
+.earnings {
+  text-align: right;
+}
+
+.earnings-amount {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.earnings-label {
+  font-size: 0.8rem;
+  color: #cccccc;
+}
+
+.trip-info {
+  padding: 20px;
+  border-bottom: 1px solid #eeeeee;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.passenger-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.passenger-avatar {
+  font-size: 1.5rem;
+}
+
+.passenger-details h4 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.passenger-details p {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #666666;
+}
+
+.trip-details {
+  text-align: right;
+}
+
+.destination, .eta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.9rem;
+  margin-bottom: 4px;
+}
+
+.map-container {
+  height: 300px;
+  background: #f5f5f5;
+  position: relative;
+  overflow: hidden;
+}
+
+.map-placeholder {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+  position: relative;
+}
+
+.map-content {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.route-line {
+  position: absolute;
+  top: 50%;
+  left: 20%;
+  right: 20%;
+  height: 4px;
+  background: #2196f3;
+  border-radius: 2px;
+  transform: translateY(-50%);
+}
+
+.current-location {
+  position: absolute;
+  top: 50%;
+  left: 20%;
+  transform: translate(-50%, -50%);
+  font-size: 1.5rem;
+}
+
+.destination-marker {
+  position: absolute;
+  top: 50%;
+  right: 20%;
+  transform: translate(50%, -50%);
+  font-size: 1.5rem;
+}
+
+.uber-controls {
+  padding: 20px;
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.uber-button {
+  flex: 1;
+  padding: 12px 20px;
+  background: #000000;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.uber-button:hover {
+  background: #333333;
+}
+
+.uber-footer {
+  padding: 20px;
+  background: #f8f9fa;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid #eeeeee;
+}
+
+.trip-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.status-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #4caf50;
+}
+
+.next-trip {
+  font-size: 0.8rem;
+  color: #666666;
+}
+
+/* Voice Assistant Overlay */
+.voice-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 2;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+  padding-bottom: 0;
+}
+
+.voice-overlay.visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+.voice-notification {
+  background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+  border-radius: 20px 20px 0 0;
+  padding: 25px 20px;
+  text-align: center;
+  box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.5);
+  max-width: 100%;
+  width: 100%;
+  animation: slideUpFromBottom 0.5s ease;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.voice-content {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  text-align: left;
+  margin-bottom: 0;
+  color: #ffffff;
+  gap: 15px;
+}
+
+.voice-sound-waves {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  height: 50px;
+  flex-shrink: 0;
+}
+
+.voice-wave {
+  width: 3px;
+  height: 20px;
+  background: linear-gradient(to top, #ffffff, rgba(255, 255, 255, 0.3));
+  border-radius: 2px;
+  animation: waveAnimation 1.5s ease-in-out infinite;
+}
+
+.voice-wave:nth-child(1) { animation-delay: 0s; }
+.voice-wave:nth-child(2) { animation-delay: 0.2s; }
+.voice-wave:nth-child(3) { animation-delay: 0.4s; }
+.voice-wave:nth-child(4) { animation-delay: 0.6s; }
+.voice-wave:nth-child(5) { animation-delay: 0.8s; }
+
+.voice-text h3 {
+  margin: 0 0 4px 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #ffffff;
+  letter-spacing: 0.5px;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+.voice-text p {
+  margin: 0;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 1.3;
+  font-weight: 300;
+}
+
+.voice-left {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 15px;
+  flex: 0 0 auto;
+  justify-content: flex-start;
+}
+
+.voice-right {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.voice-talk-button {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: none;
+  background: linear-gradient(135deg, #ff3b30 0%, #ff2d55 100%);
+  color: #ffffff;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: 'UberMove', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  padding: 20px;
+  flex-direction: column;
+}
+
+.voice-talk-button:hover {
+  background: linear-gradient(135deg, #ff2d55 0%, #ff1744 100%);
+  transform: scale(1.1);
+  box-shadow: 0 12px 40px rgba(255, 59, 48, 0.4);
+}
+
+.voice-talk-button:active {
+  transform: scale(0.95);
+}
+
+.voice-talk-button.listening {
+  background: linear-gradient(135deg, #ff3b30 0%, #ff2d55 100%);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+  animation: pulse 1.5s infinite;
+}
+
+.voice-button-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  z-index: 2;
+  position: relative;
+}
+
+.voice-mic-icon {
+  font-size: 2rem;
+  transition: transform 0.3s ease;
+}
+
+.voice-talk-button.listening .voice-mic-icon {
+  animation: bounce 1s infinite;
+}
+
+.voice-button-text {
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.voice-sound-waves {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  gap: 3px;
+  z-index: 1;
+}
+
+
+.voice-status-text {
+  font-size: 0.8rem;
+  color: #666666;
+  font-weight: 400;
+  margin: 0;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
 }
 
 .container {
@@ -248,6 +634,270 @@
   }
 }
 
+/* Calling Overlay */
+.calling-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 3;
+  padding-bottom: 0;
+}
+
+.calling-notification {
+  background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+  border-radius: 20px 20px 0 0;
+  padding: 25px 20px;
+  text-align: center;
+  box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.5);
+  max-width: 100%;
+  width: 100%;
+  animation: slideUpFromBottom 0.5s ease;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  position: relative;
+  z-index: 4;
+}
+
+.connecting-notification {
+  background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+  border-radius: 20px 20px 0 0;
+  padding: 25px 20px;
+  text-align: center;
+  box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.5);
+  max-width: 100%;
+  width: 100%;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  position: relative;
+  z-index: 4;
+}
+
+.connecting-notification.slide-down {
+  animation: slideDownToBottom 0.5s ease forwards;
+}
+
+.calling-content {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  margin-bottom: 20px;
+  color: #ffffff;
+  gap: 15px;
+}
+
+.calling-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  animation: pulse 1.5s infinite;
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  flex-shrink: 0;
+}
+
+.calling-text {
+  text-align: center;
+  font-weight: 500;
+}
+
+.calling-text h3 {
+  margin: 0 0 4px 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #ffffff;
+  letter-spacing: 0.5px;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  animation: callingPulse 2s ease-in-out infinite;
+} 
+
+.calling-text p {
+  margin: 0;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 1.3;
+  font-weight: 300;
+}
+
+.calling-actions {
+  display: flex;
+  gap: 8.75px;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.decline-button, .accept-button {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+  position: relative;
+  overflow: hidden;
+  gap: 10px;
+}
+
+.decline-button {
+  background: linear-gradient(135deg, #ff3b30 0%, #ff2d55 100%);
+  color: #ffffff;
+}
+
+.decline-button:hover {
+  background: linear-gradient(135deg, #ff2d55 0%, #ff1744 100%);
+  transform: scale(1.1);
+  box-shadow: 0 12px 40px rgba(255, 59, 48, 0.4);
+}
+
+.decline-button:active {
+  transform: scale(0.95);
+}
+
+.accept-button {
+  background: linear-gradient(135deg, #34c759 0%, #30d158 100%);
+  color: #ffffff;
+}
+
+.accept-button:hover {
+  background: linear-gradient(135deg, #30d158 0%, #28cd41 100%);
+  transform: scale(1.1);
+  box-shadow: 0 12px 40px rgba(52, 199, 89, 0.4);
+}
+
+.accept-button:active {
+  transform: scale(0.95);
+}
+
+.decline-icon, .accept-icon {
+  width: 20px;
+  height: 20px;
+  display: block;
+  color: #ffffff;
+  stroke: #ffffff;
+  stroke-width: 2.5;
+}
+
+.decline-button span:last-child,
+.accept-button span:last-child {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 2px;
+}
+
+.decline-button::before, .accept-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.decline-button:hover::before, .accept-button:hover::before {
+  opacity: 1;
+}
+
+/* Declined Notification */
+.declined-notification {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 30px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  z-index: 3;
+  animation: slideIn 0.5s ease;
+  min-width: 250px;
+}
+
+.declined-content {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  text-align: left;
+}
+
+.declined-icon {
+  font-size: 3rem;
+  opacity: 0.7;
+}
+
+.declined-text h3 {
+  margin: 0 0 8px 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #000000;
+}
+
+.declined-text p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #666666;
+  line-height: 1.4;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUpFromBottom {
+  from {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInFromBottom {
+  from {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
 /* Mobile optimizations */
 @media (max-width: 480px) {
   .container {
@@ -270,5 +920,110 @@
   
   .button-text {
     font-size: 0.8rem;
+  }
+  
+  .calling-content {
+    padding: 40px 20px 20px;
+  }
+  
+  .calling-icon {
+    width: 100px;
+    height: 100px;
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+  }
+  
+  .calling-text h3 {
+    font-size: 1.5rem;
+    font-weight:500;
+  }
+  
+  .calling-text p {
+    font-size: 0.9rem;
+  }
+  
+  .calling-actions {
+    gap: 40px;
+    padding: 40px 20px;
+  }
+  
+  .decline-button, .accept-button {
+    width: 70px;
+    height: 70px;
+    font-size: 1.5rem;
+  }
+  
+  .decline-icon, .accept-icon {
+    font-size: 1.5rem;
+  }
+  
+  .declined-notification {
+    margin: 0 20px;
+    padding: 20px;
+    min-width: 220px;
+  }
+  
+  .declined-content {
+    gap: 15px;
+  }
+  
+  .declined-icon {
+    font-size: 2rem;
+  }
+}
+
+/* Calling Text Animation */
+@keyframes callingPulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+    text-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.8;
+    text-shadow: 0 0 15px rgba(255, 255, 255, 0.6);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+    text-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
+  }
+}
+
+@keyframes waveAnimation {
+  0%, 100% {
+    height: 8px;
+    opacity: 0.4;
+  }
+  50% {
+    height: 20px;
+    opacity: 1;
+  }
+}
+
+/* Connecting Spinner */
+.connecting-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top: 2px solid #ffffff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes slideDownToBottom {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(100%);
   }
 }
