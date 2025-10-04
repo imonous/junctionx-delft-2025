@@ -1,0 +1,274 @@
+/* Reset and base styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.app {
+  min-height: 100vh;
+  background: #000000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'UberMove', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  padding: 20px;
+}
+
+.container {
+  width: 100%;
+  max-width: 375px;
+  background: #ffffff;
+  border-radius: 0;
+  padding: 60px 40px;
+  text-align: center;
+  box-shadow: none;
+  border: none;
+}
+
+/* Header */
+.header {
+  margin-bottom: 80px;
+}
+
+.title {
+  font-size: 2.5rem;
+  font-weight: 300;
+  color: #000000;
+  margin-bottom: 8px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.subtitle {
+  font-size: 0.9rem;
+  color: #666666;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+/* Main content */
+.main-content {
+  margin-bottom: 60px;
+}
+
+.button-container {
+  position: relative;
+  display: inline-block;
+  margin-bottom: 30px;
+  transition: transform 0.3s ease;
+}
+
+.button-container.active {
+  transform: scale(1.05);
+}
+
+.talk-button {
+  width: 160px;
+  height: 160px;
+  border: 2px solid #000000;
+  border-radius: 50%;
+  background: #ffffff;
+  color: #000000;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+  box-shadow: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+
+.talk-button:hover {
+  background: #000000;
+  color: #ffffff;
+  transform: none;
+}
+
+.talk-button:active {
+  transform: scale(0.98);
+}
+
+.talk-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.talk-button.listening {
+  background: #000000;
+  color: #ffffff;
+  animation: pulse 1.5s infinite;
+}
+
+.talk-button.processing {
+  background: #000000;
+  color: #ffffff;
+}
+
+.button-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  z-index: 2;
+  position: relative;
+}
+
+.mic-icon {
+  font-size: 2rem;
+  transition: transform 0.2s ease;
+}
+
+.talk-button.listening .mic-icon {
+  animation: bounce 1s infinite;
+}
+
+.button-text {
+  font-size: 0.9rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+/* Sound waves animation */
+.sound-waves {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  gap: 3px;
+  z-index: 1;
+}
+
+.wave {
+  width: 3px;
+  height: 16px;
+  background: #000000;
+  border-radius: 1px;
+  animation: wave 1.2s infinite ease-in-out;
+}
+
+.wave:nth-child(1) { animation-delay: 0s; }
+.wave:nth-child(2) { animation-delay: 0.1s; }
+.wave:nth-child(3) { animation-delay: 0.2s; }
+.wave:nth-child(4) { animation-delay: 0.3s; }
+
+/* Processing dots animation */
+.processing-dots {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 4px;
+  z-index: 2;
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  background: #000000;
+  border-radius: 50%;
+  animation: dotPulse 1.4s infinite ease-in-out;
+}
+
+.dot:nth-child(1) { animation-delay: 0s; }
+.dot:nth-child(2) { animation-delay: 0.2s; }
+.dot:nth-child(3) { animation-delay: 0.4s; }
+
+/* Status text */
+.status-text {
+  font-size: 0.8rem;
+  color: #666666;
+  font-weight: 400;
+  margin: 0;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+/* Footer */
+.footer {
+  border-top: 1px solid #000000;
+  padding-top: 20px;
+}
+
+.description {
+  font-size: 0.7rem;
+  color: #999999;
+  line-height: 1.4;
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+/* Animations */
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-10px);
+  }
+  60% {
+    transform: translateY(-5px);
+  }
+}
+
+@keyframes wave {
+  0%, 40%, 100% {
+    transform: scaleY(0.4);
+  }
+  20% {
+    transform: scaleY(1);
+  }
+}
+
+@keyframes dotPulse {
+  0%, 80%, 100% {
+    transform: scale(0.8);
+    opacity: 0.5;
+  }
+  40% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Mobile optimizations */
+@media (max-width: 480px) {
+  .container {
+    padding: 40px 30px;
+    margin: 0;
+  }
+  
+  .title {
+    font-size: 2rem;
+  }
+  
+  .talk-button {
+    width: 140px;
+    height: 140px;
+  }
+  
+  .mic-icon {
+    font-size: 1.8rem;
+  }
+  
+  .button-text {
+    font-size: 0.8rem;
+  }
+}
