@@ -1,47 +1,19 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import './App.css'
 
 function App() {
-  const [isActive, setIsActive] = useState(false)
-  const [isListening, setIsListening] = useState(false)
-  const [isProcessing, setIsProcessing] = useState(false)
+  const [isInCall, setIsInCall] = useState(false)
 
   const handleToggle = () => {
-    if (!isActive) {
-      // Starting conversation
-      setIsActive(true)
-      setIsListening(true)
-      
-      // Simulate listening for 3 seconds, then processing
-      setTimeout(() => {
-        setIsListening(false)
-        setIsProcessing(true)
-        
-        // Simulate processing for 2 seconds, then back to idle
-        setTimeout(() => {
-          setIsProcessing(false)
-        }, 2000)
-      }, 3000)
-    } else {
-      // Ending conversation
-      setIsActive(false)
-      setIsListening(false)
-      setIsProcessing(false)
-    }
+    setIsInCall(!isInCall)
   }
 
   const getButtonText = () => {
-    if (isListening) return 'Listening'
-    if (isProcessing) return 'Processing'
-    if (isActive) return 'End'
-    return 'Start'
+    return isInCall ? 'End Call' : 'Start Call'
   }
 
   const getStatusText = () => {
-    if (isListening) return 'Speak'
-    if (isProcessing) return 'Thinking'
-    if (isActive) return 'Active'
-    return 'Tap to start'
+    return isInCall ? 'In Call' : 'Tap to start'
   }
 
   return (
@@ -53,33 +25,24 @@ function App() {
         </div>
         
         <div className="main-content">
-          <div className={`button-container ${isActive ? 'active' : ''}`}>
+          <div className={`button-container ${isInCall ? 'active' : ''}`}>
             <button 
-              className={`talk-button ${isListening ? 'listening' : ''} ${isProcessing ? 'processing' : ''}`}
+              className={`talk-button ${isInCall ? 'listening' : ''}`}
               onClick={handleToggle}
-              disabled={isProcessing}
             >
               <div className="button-content">
                 <div className="mic-icon">
-                  {isListening ? '🎤' : '🎧'}
+                  {isInCall ? '📞' : '🎧'}
                 </div>
                 <span className="button-text">{getButtonText()}</span>
               </div>
               
-              {isListening && (
+              {isInCall && (
                 <div className="sound-waves">
                   <div className="wave"></div>
                   <div className="wave"></div>
                   <div className="wave"></div>
                   <div className="wave"></div>
-                </div>
-              )}
-              
-              {isProcessing && (
-                <div className="processing-dots">
-                  <div className="dot"></div>
-                  <div className="dot"></div>
-                  <div className="dot"></div>
                 </div>
               )}
             </button>
