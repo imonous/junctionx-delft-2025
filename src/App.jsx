@@ -4,6 +4,7 @@ import { Phone, PhoneCall } from 'lucide-react';
 import { X } from 'lucide-react';
 import './App.css'
 import dedent from 'dedent';
+import { hypothesis } from './services/Engine.jsx';
 
 const agent = new RealtimeAgent({
   name: 'Ubi',
@@ -65,6 +66,12 @@ function App() {
   useEffect(() => {
     console.log('Setting up 3-second timer for agent calling...')
     const timer = setTimeout(() => {
+      hypothesis(1, 7, 3)
+        .then(data => console.log(`Hypothesis(s(1.26, 3)): ${data}`))
+      hypothesis(1, 7, 4)
+        .then(data => console.log(`Hypothesis(s(1.26, 4)): ${data}`))
+      hypothesis(3, 2, 4)
+        .then(data => console.log(`Hypothesis(s(0.97, 4)): ${data}`))
       console.log('3 seconds elapsed, starting agent call...')
       setAgentCalling(true)
       startIPhoneRingtone()
