@@ -61,10 +61,60 @@ function App() {
   const [isConnecting, setIsConnecting] = useState(false)
   const [declinedSliding, setDeclinedSliding] = useState(false)
   const [ringtoneInterval, setRingtoneInterval] = useState(null)
+  const [audioContext, setAudioContext] = useState(null)
 
-  // Simulate agent calling the driver after 3 seconds
+  // Initialize audio context on component mount
   useEffect(() => {
-    console.log('Setting up 3-second timer for agent calling...')
+    const initAudioContext = async () => {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)()
+        setAudioContext(ctx)
+        console.log('Audio context initialized:', ctx.state)
+        console.log('Web Audio API supported:', !!(window.AudioContext || window.webkitAudioContext))
+      } catch (error) {
+        console.error('Failed to initialize audio context:', error)
+        console.log('Web Audio API not supported, will use fallback')
+      }
+    }
+    
+    initAudioContext()
+    
+    return () => {
+      if (audioContext) {
+        audioContext.close()
+      }
+    }
+  }, [])
+
+  // Enable audio context on first user interaction
+  useEffect(() => {
+    const enableAudio = async () => {
+      if (audioContext && audioContext.state === 'suspended') {
+        try {
+          await audioContext.resume()
+          console.log('Audio context enabled by user interaction')
+        } catch (error) {
+          console.error('Failed to enable audio context:', error)
+        }
+      }
+    }
+
+    // Enable audio on any user interaction
+    const events = ['click', 'touchstart', 'keydown']
+    events.forEach(event => {
+      document.addEventListener(event, enableAudio, { once: true })
+    })
+
+    return () => {
+      events.forEach(event => {
+        document.removeEventListener(event, enableAudio)
+      })
+    }
+  }, [audioContext])
+
+  // Function to start the 3-second timer when message button is pressed
+  const startCallTimer = () => {
+    console.log('Message button pressed, starting 3-second timer...')
     const timer = setTimeout(() => {
       hypothesis(1, 7, 3)
         .then(data => console.log(`Hypothesis(s(1.26, 3)): ${data}`))
@@ -76,9 +126,9 @@ function App() {
       setAgentCalling(true)
       startIPhoneRingtone()
     }, 3000)
-
-    return () => clearTimeout(timer)
-  }, [])
+    
+    return timer
+  }
 
   // Clean up ringtone when component unmounts or call ends
   useEffect(() => {
@@ -117,204 +167,248 @@ function App() {
   }
 
   function playPhonePickupSound() {
-    // Create realistic phone pickup sound with multiple tones
-    const audioContext = new (window.AudioContext || window.webkitAudioContext)()
+    if (!audioContext) {
+      console.error('Audio context not available for pickup sound')
+      return
+    }
     
-    // Create a more complex pickup sound with two oscillators
-    const oscillator1 = audioContext.createOscillator()
-    const oscillator2 = audioContext.createOscillator()
-    const gainNode = audioContext.createGain()
-    const filter = audioContext.createBiquadFilter()
-    
-    // Connect the audio graph
-    oscillator1.connect(filter)
-    oscillator2.connect(filter)
-    filter.connect(gainNode)
-    gainNode.connect(audioContext.destination)
-    
-    // Set up filter for more realistic phone sound
-    filter.type = 'lowpass'
-    filter.frequency.setValueAtTime(2000, audioContext.currentTime)
-    
-    // First tone: lower frequency click
-    oscillator1.type = 'sine'
-    oscillator1.frequency.setValueAtTime(400, audioContext.currentTime)
-    oscillator1.frequency.exponentialRampToValueAtTime(600, audioContext.currentTime + 0.05)
-    
-    // Second tone: higher frequency beep
-    oscillator2.type = 'sine'
-    oscillator2.frequency.setValueAtTime(800, audioContext.currentTime)
-    oscillator2.frequency.exponentialRampToValueAtTime(1000, audioContext.currentTime + 0.08)
-    
-    // Envelope for natural sound
-    gainNode.gain.setValueAtTime(0, audioContext.currentTime)
-    gainNode.gain.linearRampToValueAtTime(0.4, audioContext.currentTime + 0.02)
-    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.12)
-    
-    oscillator1.start(audioContext.currentTime)
-    oscillator1.stop(audioContext.currentTime + 0.12)
-    oscillator2.start(audioContext.currentTime)
-    oscillator2.stop(audioContext.currentTime + 0.12)
+    try {
+      // Create a more complex pickup sound with two oscillators
+      const oscillator1 = audioContext.createOscillator()
+      const oscillator2 = audioContext.createOscillator()
+      const gainNode = audioContext.createGain()
+      const filter = audioContext.createBiquadFilter()
+      
+      // Connect the audio graph
+      oscillator1.connect(filter)
+      oscillator2.connect(filter)
+      filter.connect(gainNode)
+      gainNode.connect(audioContext.destination)
+      
+      // Set up filter for more realistic phone sound
+      filter.type = 'lowpass'
+      filter.frequency.setValueAtTime(2000, audioContext.currentTime)
+      
+      // First tone: lower frequency click
+      oscillator1.type = 'sine'
+      oscillator1.frequency.setValueAtTime(400, audioContext.currentTime)
+      oscillator1.frequency.exponentialRampToValueAtTime(600, audioContext.currentTime + 0.05)
+      
+      // Second tone: higher frequency beep
+      oscillator2.type = 'sine'
+      oscillator2.frequency.setValueAtTime(800, audioContext.currentTime)
+      oscillator2.frequency.exponentialRampToValueAtTime(1000, audioContext.currentTime + 0.08)
+      
+      // Envelope for natural sound
+      gainNode.gain.setValueAtTime(0, audioContext.currentTime)
+      gainNode.gain.linearRampToValueAtTime(0.4, audioContext.currentTime + 0.02)
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.12)
+      
+      oscillator1.start(audioContext.currentTime)
+      oscillator1.stop(audioContext.currentTime + 0.12)
+      oscillator2.start(audioContext.currentTime)
+      oscillator2.stop(audioContext.currentTime + 0.12)
+    } catch (error) {
+      console.error('Error playing pickup sound:', error)
+    }
   }
 
   function playConnectionSound() {
-    // Create pleasant connection confirmation sound
-    const audioContext = new (window.AudioContext || window.webkitAudioContext)()
+    if (!audioContext) {
+      console.error('Audio context not available for connection sound')
+      return
+    }
     
-    // Create a harmonious chord for connection success
-    const oscillator1 = audioContext.createOscillator()
-    const oscillator2 = audioContext.createOscillator()
-    const oscillator3 = audioContext.createOscillator()
-    const gainNode = audioContext.createGain()
-    const filter = audioContext.createBiquadFilter()
-    
-    // Connect the audio graph
-    oscillator1.connect(filter)
-    oscillator2.connect(filter)
-    oscillator3.connect(filter)
-    filter.connect(gainNode)
-    gainNode.connect(audioContext.destination)
-    
-    // Set up filter for warm, pleasant sound
-    filter.type = 'lowpass'
-    filter.frequency.setValueAtTime(3000, audioContext.currentTime)
-    filter.Q.setValueAtTime(1, audioContext.currentTime)
-    
-    // Create a pleasant major chord (C-E-G)
-    oscillator1.type = 'sine'
-    oscillator1.frequency.setValueAtTime(523.25, audioContext.currentTime) // C5
-    
-    oscillator2.type = 'sine'
-    oscillator2.frequency.setValueAtTime(659.25, audioContext.currentTime) // E5
-    
-    oscillator3.type = 'sine'
-    oscillator3.frequency.setValueAtTime(783.99, audioContext.currentTime) // G5
-    
-    // Gentle envelope for pleasant fade-in and fade-out
-    gainNode.gain.setValueAtTime(0, audioContext.currentTime)
-    gainNode.gain.linearRampToValueAtTime(0.15, audioContext.currentTime + 0.1)
-    gainNode.gain.linearRampToValueAtTime(0.1, audioContext.currentTime + 0.3)
-    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.6)
-    
-    oscillator1.start(audioContext.currentTime)
-    oscillator1.stop(audioContext.currentTime + 0.6)
-    oscillator2.start(audioContext.currentTime)
-    oscillator2.stop(audioContext.currentTime + 0.6)
-    oscillator3.start(audioContext.currentTime)
-    oscillator3.stop(audioContext.currentTime + 0.6)
+    try {
+      // Create a harmonious chord for connection success
+      const oscillator1 = audioContext.createOscillator()
+      const oscillator2 = audioContext.createOscillator()
+      const oscillator3 = audioContext.createOscillator()
+      const gainNode = audioContext.createGain()
+      const filter = audioContext.createBiquadFilter()
+      
+      // Connect the audio graph
+      oscillator1.connect(filter)
+      oscillator2.connect(filter)
+      oscillator3.connect(filter)
+      filter.connect(gainNode)
+      gainNode.connect(audioContext.destination)
+      
+      // Set up filter for warm, pleasant sound
+      filter.type = 'lowpass'
+      filter.frequency.setValueAtTime(3000, audioContext.currentTime)
+      filter.Q.setValueAtTime(1, audioContext.currentTime)
+      
+      // Create a pleasant major chord (C-E-G)
+      oscillator1.type = 'sine'
+      oscillator1.frequency.setValueAtTime(523.25, audioContext.currentTime) // C5
+      
+      oscillator2.type = 'sine'
+      oscillator2.frequency.setValueAtTime(659.25, audioContext.currentTime) // E5
+      
+      oscillator3.type = 'sine'
+      oscillator3.frequency.setValueAtTime(783.99, audioContext.currentTime) // G5
+      
+      // Gentle envelope for pleasant fade-in and fade-out
+      gainNode.gain.setValueAtTime(0, audioContext.currentTime)
+      gainNode.gain.linearRampToValueAtTime(0.15, audioContext.currentTime + 0.1)
+      gainNode.gain.linearRampToValueAtTime(0.1, audioContext.currentTime + 0.3)
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.6)
+      
+      oscillator1.start(audioContext.currentTime)
+      oscillator1.stop(audioContext.currentTime + 0.6)
+      oscillator2.start(audioContext.currentTime)
+      oscillator2.stop(audioContext.currentTime + 0.6)
+      oscillator3.start(audioContext.currentTime)
+      oscillator3.stop(audioContext.currentTime + 0.6)
+    } catch (error) {
+      console.error('Error playing connection sound:', error)
+    }
   }
 
   function playDeclineSound() {
-    // Create a gentle decline sound (lower pitch, descending tone)
-    const audioContext = new (window.AudioContext || window.webkitAudioContext)()
+    if (!audioContext) {
+      console.error('Audio context not available for decline sound')
+      return
+    }
     
-    const oscillator1 = audioContext.createOscillator()
-    const oscillator2 = audioContext.createOscillator()
-    const gainNode = audioContext.createGain()
-    const filter = audioContext.createBiquadFilter()
-    
-    // Connect the audio graph
-    oscillator1.connect(filter)
-    oscillator2.connect(filter)
-    filter.connect(gainNode)
-    gainNode.connect(audioContext.destination)
-    
-    // Set up filter for softer decline sound
-    filter.type = 'lowpass'
-    filter.frequency.setValueAtTime(1500, audioContext.currentTime)
-    
-    // Create a descending tone pattern (like a gentle "no")
-    oscillator1.type = 'sine'
-    oscillator1.frequency.setValueAtTime(400, audioContext.currentTime)
-    oscillator1.frequency.exponentialRampToValueAtTime(300, audioContext.currentTime + 0.15)
-    
-    oscillator2.type = 'sine'
-    oscillator2.frequency.setValueAtTime(600, audioContext.currentTime)
-    oscillator2.frequency.exponentialRampToValueAtTime(450, audioContext.currentTime + 0.15)
-    
-    // Gentle envelope for soft decline sound
-    gainNode.gain.setValueAtTime(0, audioContext.currentTime)
-    gainNode.gain.linearRampToValueAtTime(0.2, audioContext.currentTime + 0.05)
-    gainNode.gain.linearRampToValueAtTime(0.1, audioContext.currentTime + 0.1)
-    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2)
-    
-    oscillator1.start(audioContext.currentTime)
-    oscillator1.stop(audioContext.currentTime + 0.2)
-    oscillator2.start(audioContext.currentTime)
-    oscillator2.stop(audioContext.currentTime + 0.2)
+    try {
+      const oscillator1 = audioContext.createOscillator()
+      const oscillator2 = audioContext.createOscillator()
+      const gainNode = audioContext.createGain()
+      const filter = audioContext.createBiquadFilter()
+      
+      // Connect the audio graph
+      oscillator1.connect(filter)
+      oscillator2.connect(filter)
+      filter.connect(gainNode)
+      gainNode.connect(audioContext.destination)
+      
+      // Set up filter for softer decline sound
+      filter.type = 'lowpass'
+      filter.frequency.setValueAtTime(1500, audioContext.currentTime)
+      
+      // Create a descending tone pattern (like a gentle "no")
+      oscillator1.type = 'sine'
+      oscillator1.frequency.setValueAtTime(400, audioContext.currentTime)
+      oscillator1.frequency.exponentialRampToValueAtTime(300, audioContext.currentTime + 0.15)
+      
+      oscillator2.type = 'sine'
+      oscillator2.frequency.setValueAtTime(600, audioContext.currentTime)
+      oscillator2.frequency.exponentialRampToValueAtTime(450, audioContext.currentTime + 0.15)
+      
+      // Gentle envelope for soft decline sound
+      gainNode.gain.setValueAtTime(0, audioContext.currentTime)
+      gainNode.gain.linearRampToValueAtTime(0.2, audioContext.currentTime + 0.05)
+      gainNode.gain.linearRampToValueAtTime(0.1, audioContext.currentTime + 0.1)
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2)
+      
+      oscillator1.start(audioContext.currentTime)
+      oscillator1.stop(audioContext.currentTime + 0.2)
+      oscillator2.start(audioContext.currentTime)
+      oscillator2.stop(audioContext.currentTime + 0.2)
+    } catch (error) {
+      console.error('Error playing decline sound:', error)
+    }
   }
 
   function startIPhoneRingtone() {
     console.log('Starting iPhone ringtone...')
     
-    // Create iPhone-style ringtone (classic "Opening" ringtone)
     const playRing = () => {
+      console.log('Playing ring sound...')
+      
       try {
-        const audioContext = new (window.AudioContext || window.webkitAudioContext)()
+        // Create a new audio context for each ring to avoid issues
+        const ctx = new (window.AudioContext || window.webkitAudioContext)()
         
-        // Resume audio context if it's suspended (required for autoplay policy)
-        if (audioContext.state === 'suspended') {
-          audioContext.resume().then(() => {
-            console.log('Audio context resumed')
-            createRingSound(audioContext)
-          }).catch(error => {
-            console.error('Failed to resume audio context:', error)
+        // Resume if suspended
+        if (ctx.state === 'suspended') {
+          ctx.resume().then(() => {
+            console.log('Audio context resumed, playing ring')
+            createSimpleRing(ctx)
+          }).catch(err => {
+            console.error('Failed to resume audio context:', err)
+            playSimpleBeep()
           })
         } else {
-          createRingSound(audioContext)
+          createSimpleRing(ctx)
         }
       } catch (error) {
         console.error('Error creating audio context:', error)
+        playSimpleBeep()
       }
     }
     
-    const createRingSound = (audioContext) => {
+    const createSimpleRing = (ctx) => {
       try {
-        const oscillator1 = audioContext.createOscillator()
-        const oscillator2 = audioContext.createOscillator()
-        const gainNode = audioContext.createGain()
-        const filter = audioContext.createBiquadFilter()
+        console.log('Creating simple ring with context state:', ctx.state)
         
-        // Connect the audio graph
-        oscillator1.connect(filter)
-        oscillator2.connect(filter)
-        filter.connect(gainNode)
-        gainNode.connect(audioContext.destination)
+        // Create two oscillators for the ringtone
+        const osc1 = ctx.createOscillator()
+        const osc2 = ctx.createOscillator()
+        const gain = ctx.createGain()
         
-        // Set up filter for iPhone-like sound
-        filter.type = 'lowpass'
-        filter.frequency.setValueAtTime(2500, audioContext.currentTime)
-        filter.Q.setValueAtTime(1, audioContext.currentTime)
+        // Connect them
+        osc1.connect(gain)
+        osc2.connect(gain)
+        gain.connect(ctx.destination)
         
-        // iPhone "Opening" ringtone frequencies (A4 and C5)
-        oscillator1.type = 'sine'
-        oscillator1.frequency.setValueAtTime(440, audioContext.currentTime) // A4
+        // Set frequencies (A4 and C5)
+        osc1.frequency.value = 440
+        osc2.frequency.value = 523.25
+        osc1.type = 'sine'
+        osc2.type = 'sine'
         
-        oscillator2.type = 'sine'
-        oscillator2.frequency.setValueAtTime(523.25, audioContext.currentTime) // C5
+        // Set volume
+        gain.gain.value = 0.3
         
-        // iPhone ringtone envelope (quick attack, short sustain, quick decay)
-        gainNode.gain.setValueAtTime(0, audioContext.currentTime)
-        gainNode.gain.linearRampToValueAtTime(0.4, audioContext.currentTime + 0.05)
-        gainNode.gain.linearRampToValueAtTime(0.3, audioContext.currentTime + 0.15)
-        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5)
-        
-        oscillator1.start(audioContext.currentTime)
-        oscillator1.stop(audioContext.currentTime + 0.5)
-        oscillator2.start(audioContext.currentTime)
-        oscillator2.stop(audioContext.currentTime + 0.5)
+        // Play for 0.5 seconds
+        osc1.start()
+        osc2.start()
+        osc1.stop(ctx.currentTime + 0.5)
+        osc2.stop(ctx.currentTime + 0.5)
         
         console.log('Ring played successfully')
       } catch (error) {
-        console.error('Error creating ring sound:', error)
+        console.error('Error creating ring:', error)
+        playSimpleBeep()
+      }
+    }
+    
+    const playSimpleBeep = () => {
+      try {
+        console.log('Playing simple beep fallback')
+        // Create a very simple beep using the system beep
+        const ctx = new (window.AudioContext || window.webkitAudioContext)()
+        const osc = ctx.createOscillator()
+        const gain = ctx.createGain()
+        
+        osc.connect(gain)
+        gain.connect(ctx.destination)
+        
+        osc.frequency.value = 800
+        osc.type = 'sine'
+        gain.gain.value = 0.2
+        
+        osc.start()
+        osc.stop(ctx.currentTime + 0.3)
+        
+        console.log('Simple beep played')
+      } catch (error) {
+        console.error('Even simple beep failed:', error)
       }
     }
     
     // Play ring immediately
     playRing()
     
-    // Set up interval to repeat ringtone every 2.5 seconds (iPhone timing)
-    const interval = setInterval(playRing, 2500)
+    // Set up interval to repeat ringtone every 2.5 seconds
+    const interval = setInterval(() => {
+      console.log('Interval triggered, playing ring')
+      playRing()
+    }, 2500)
+    
     setRingtoneInterval(interval)
     console.log('Ringtone interval set:', interval)
   }
@@ -353,6 +447,9 @@ function App() {
 
   async function handleToggle() {
     if (isInCall) {
+      // Play decline sound when call ends
+      playDeclineSound()
+      
       setIsInCall(false)
       setShowUberScreen(true)
       session.close();
@@ -439,7 +536,7 @@ function App() {
 
         <div className="uber-controls">
           <button className="uber-button">Navigate</button>
-          <button className="uber-button">Message</button>
+          <button className="uber-button" onClick={startCallTimer}>Message</button>
           <button className="uber-button">Call</button>
         </div>
 
