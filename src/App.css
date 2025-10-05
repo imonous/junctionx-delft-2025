@@ -412,6 +412,10 @@
   width: 100%;
   animation: slideUpFromBottom 0.5s ease;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .voice-content {
@@ -817,6 +821,10 @@
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   position: relative;
   z-index: 4;
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .connecting-notification {
@@ -830,6 +838,10 @@
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   position: relative;
   z-index: 4;
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .connecting-notification.slide-down {
@@ -1101,18 +1113,26 @@
   }
   
   .calling-actions {
-    gap: 40px;
-    padding: 40px 20px;
+    gap: 30px;
+    padding: 20px 15px;
+  }
+  
+  /* Reduce height for mobile phones */
+  .voice-notification,
+  .calling-notification,
+  .connecting-notification {
+    min-height: 100px;
+    padding: 20px 15px;
   }
   
   .decline-button, .accept-button {
-    width: 70px;
-    height: 70px;
-    font-size: 1.5rem;
+    width: 60px;
+    height: 60px;
+    font-size: 1.3rem;
   }
   
   .decline-icon, .accept-icon {
-    font-size: 1.5rem;
+    font-size: 1.2rem;
   }
   
   .declined-notification {
