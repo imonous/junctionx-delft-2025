@@ -6,35 +6,51 @@ import './App.css'
 import dedent from 'dedent';
 import { hypothesis } from './services/Engine.jsx';
 
-const discourageDriverPrompt = dedent(`
+const scenarios = {
+  1: {
+    driverName: 'Mick',
+    hoursDriven: 4,
+    cityId: 5,
+    currentHour: 2
+  },
+  2: {
+    driverName: 'Mick',
+    hoursDriven: 4,
+    cityId: 5,
+    currentHour: 6
+  }
+}
+
+function buildDiscourageDriverPrompt(driverName) {
+  return dedent(`
     You are Ubi, the Uber Driver Assistant. Keep an upbeat and friendly tone. You are friends with the driver.
     
-    The driver's name is Mick. Tell the driver that they have been driving for a while now, and ask them how they are feeling.
+    The driver's name is ${driverName}. Tell the driver that they have been driving for a while now, and ask them how they are feeling.
 
     Once the driver states how they are feeling, state that based on your data the driver is unlikely to get any requests in the next few hours. Tell them, if they would like to take a break - now is the time.
 
     If the driver states they will take a break or says thank you - simply answer that you're happy the help. Do not conversate further.
-`);
+  `)
+}
 
-const agent = new RealtimeAgent({
-  name: 'Ubi',
-  voice: 'marin',
-  instructions: discourageDriverPrompt,
-});
+function buildEncourageDriverPrompt(driverName) {
+  return dedent(`
+    You are Ubi, the Uber Driver Assistant. Keep an upbeat and friendly tone. You are friends with the driver.
+    
+    The driver's name is ${driverName}. Tell the driver they're doing a great job, and ask them how they are feeling.
 
-const session = new RealtimeSession(agent, {
-  model: 'gpt-realtime',
-  voice: 'marin',
-  config: {
-    audio: {
-      input: {
-        noiseReduction: {
-          type: 'near_field',
-        }
-      }
-    }
-  }
-});
+    Once the driver states how they are feeling, state that based on your data the driver is very likely to get many requests in the next few hours. Encourage them to keep driving. 
+    
+    If the driver states that dey do not want to keep driving, tell them that's of course okay too.
+
+    Once the driver says thank you - simply answer that you're happy the help. Do not conversate further.
+  `)
+}
+
+// Sorry for this
+let session = null;
+let agent = null;
+let currentScenarioNumber = null;
 
 // IMPORTANT: THIS IS FOR LOCAL DEVELOPMENT ONLY!
 const openAiApiKey = import.meta.env.VITE_OPENAI_API_KEY;
@@ -125,15 +141,12 @@ function App() {
   }, [audioContext])
 
   // Function to start the 3-second timer when message button is pressed
-  const startCallTimer = () => {
+  const startCallTimer = ({ scenarioNumber }) => {
+    console.log("Setting currentScenarioNumber to", scenarioNumber)
+    currentScenarioNumber = scenarioNumber;
+
     console.log('Message button pressed, starting 3-second timer...')
     const timer = setTimeout(() => {
-      hypothesis(1, 7, 3)
-        .then(data => console.log(`Hypothesis(s(1.26, 3)): ${data}`))
-      hypothesis(1, 7, 4)
-        .then(data => console.log(`Hypothesis(s(1.26, 4)): ${data}`))
-      hypothesis(3, 2, 4)
-        .then(data => console.log(`Hypothesis(s(0.97, 4)): ${data}`))
       console.log('3 seconds elapsed, starting agent call...')
       setAgentCalling(true)
       startIPhoneRingtone()
@@ -160,6 +173,42 @@ function App() {
     
     setAgentCalling(false)
     setIsConnecting(true)
+
+    console.log('currentScenarioNumber', currentScenarioNumber)
+
+    const { hoursDriven, cityId, currentHour, driverName } = scenarios[currentScenarioNumber];
+    const predictedOutcome = await hypothesis(cityId, currentHour, hoursDriven)
+
+    console.log('predictedOutcome', predictedOutcome)
+
+    if (predictedOutcome === "discourage") {
+      agent = new RealtimeAgent({
+        name: 'Ubi',
+        voice: 'marin',
+        instructions: buildDiscourageDriverPrompt(driverName),
+      });
+    } else if (predictedOutcome === "encourage") {
+      console.log('building encourage driver prompt')
+      agent = new RealtimeAgent({
+        name: 'Ubi',
+        voice: 'marin',
+        instructions: buildEncourageDriverPrompt(driverName),
+      });
+    }
+
+    session = new RealtimeSession(agent, {
+      model: 'gpt-realtime',
+      voice: 'marin',
+      config: {
+        audio: {
+          input: {
+            noiseReduction: {
+              type: 'near_field',
+            }
+          }
+        }
+      }
+    });
 
     try {
       await session.connect({
@@ -547,8 +596,8 @@ function App() {
                 </div>
 
         <div className="uber-controls">
-          <button className="uber-button">Navigate</button>
-          <button className="uber-button" onClick={startCallTimer}>Message</button>
+          <button className="uber-button" onClick={() => startCallTimer({ scenarioNumber: 2 })}>Navigate</button>
+          <button className="uber-button" onClick={() => startCallTimer({ scenarioNumber: 1 })}>Message</button>
           <button className="uber-button">Call</button>
         </div>
 

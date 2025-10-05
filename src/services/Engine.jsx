@@ -44,14 +44,18 @@ async function surge(c, h) {
 // predictor
 // gamma is how many hour's the driver's been driving already
 export async function hypothesis(c, h, gamma) {
-    const s = await surge(c, h)
     if (gamma <= 3) {
         return "no-op";
     }
-    if (s > 1.15) {
+
+    const hWindow = [h, (h + 1) % 24]
+    const sWindow = await Promise.all(hWindow.map(h => surge(c, h)))
+    const sMax = Math.max(...sWindow)
+
+    if (sMax > 1.15) {
         return "encourage";
     }
-    if (s < 0.99) {
+    if (sMax < 0.99) {
         return "discourage";
     }
     return "no-op";
