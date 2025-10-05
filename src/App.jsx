@@ -6,22 +6,34 @@ import './App.css'
 import dedent from 'dedent';
 import { hypothesis } from './services/Engine.jsx';
 
+const discourageDriverPrompt = dedent(`
+    You are Ubi, the Uber Driver Assistant. Keep an upbeat and friendly tone. You are friends with the driver.
+    
+    The driver's name is Mick. Tell the driver that they have been driving for a while now, and ask them how they are feeling.
+
+    Once the driver states how they are feeling, state that based on your data the driver is unlikely to get any requests in the next few hours. Tell them, if they would like to take a break - now is the time.
+
+    If the driver states they will take a break or says thank you - simply answer that you're happy the help. Do not conversate further.
+`);
+
 const agent = new RealtimeAgent({
   name: 'Ubi',
   voice: 'marin',
-  instructions: dedent(`
-    You are Ubi, the Uber Driver Assistant. 
-
-    
-    Keep an upbeat and friendly tone. Don't be too formal, you are friends with the driver.
-    
-    The driver's name is Jack. He's been driving for a while now and is likely tired. Ask him how he is feeling. If he is not great, offer him to take a break.
-  `),
+  instructions: discourageDriverPrompt,
 });
 
 const session = new RealtimeSession(agent, {
   model: 'gpt-realtime',
   voice: 'marin',
+  config: {
+    audio: {
+      input: {
+        noiseReduction: {
+          type: 'near_field',
+        }
+      }
+    }
+  }
 });
 
 // IMPORTANT: THIS IS FOR LOCAL DEVELOPMENT ONLY!
@@ -103,7 +115,7 @@ function App() {
       await session.connect({
         apiKey: await getEphemeralKey(),
       });
-      session.sendMessage('Ask Jack how he is feeling. Just a quick "how are you"');
+      session.sendMessage('Initiate the conversation with the driver.');
     } catch (e) {
       console.error(e);
     }
